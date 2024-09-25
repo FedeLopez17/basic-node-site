@@ -1,39 +1,27 @@
-import { createServer } from "http";
-import * as fs from "fs";
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const server = createServer((req, res) => {
-  res.setHeader("Content-Type", "text/html");
-  console.log(req.url);
+const app = express();
 
-  let page = "./views/";
+// We do it this way since __dirname is not available in ES modules (unlike in CommonJS)
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
 
-  switch (req.url) {
-    case "/":
-      page += "index.html";
-      res.statusCode = 200;
-      break;
-    case "/about":
-      page += "about.html";
-      res.statusCode = 200;
-      break;
-    case "/contact":
-      page += "contact-me.html";
-      res.statusCode = 200;
-      break;
-    default:
-      page += "404.html";
-      res.statusCode = 404;
-  }
+app.listen(8080, () => console.log("Listening for requests on port 8080"));
 
-  fs.readFile(page, (err, data) => {
-    if (err) {
-      console.log.err;
-    } else {
-      res.end(data);
-    }
-  });
+app.get("/", (req, res) => {
+  res.sendFile("./views/index.html", { root: __dirname });
 });
 
-server.listen(8080, "localhost", () =>
-  console.log("Listening for requests on port 8080")
-);
+app.get("/about", (req, res) => {
+  res.sendFile("./views/about.html", { root: __dirname });
+});
+
+app.get("/contact", (req, res) => {
+  res.sendFile("./views/contact-me.html", { root: __dirname });
+});
+
+app.use((req, res) => {
+  res.status(404).sendFile("./views/404.html", { root: __dirname });
+});
